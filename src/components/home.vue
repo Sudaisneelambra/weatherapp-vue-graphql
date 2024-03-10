@@ -174,7 +174,7 @@ export default {
               }
             })
             .catch((error) => {
-              console.error("Error fetching weather data:", error);
+              console.error(" fetching weather ", error);
             });
         },
         function (error) {
@@ -189,7 +189,7 @@ export default {
               console.log("The request to get user location timed out.");
               break;
             case error.UNKNOWN_ERROR:
-              console.log("An unknown error occurred.");
+              console.log("An unknown error occurreded.");
               break;
           }
         }
