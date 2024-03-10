@@ -18,7 +18,7 @@
           </button>
           <h1 class="w-full text-center text-[10px] text-[red]">{{ already }}</h1>
           <h1 class="w-full text-center text-[blue] text-[10px]">
-            You don't have an account? <router-link :to="'/'"><u>Login</u></router-link>
+            You don't have an account? <router-link :to="'/'"><u>Signup</u></router-link>
           </h1>
         </form>
       </div>

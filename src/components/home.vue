@@ -32,6 +32,22 @@
   </div>
   <div class="w-full flex justify-center bg-[#8c8c83]" v-if="!loading">
     <div class="shadow-2xl p-5 rounded-lg mt-10 mb-10 w-[80%] bg-[#a2b67f]">
+      <div class=" w-full  flex flex-wrap sm:gap-0 gap-6 items-center justify-between font-bold cursor-pointer">
+        <h1 class="bg-[#75727229] p-1 rounded-sm  border-b-[3px] border-transparent hover:border-black transition duration-500 hover:text-[white]">Welcome </h1>
+        <h1 @click="fetchdata" class="bg-[#75727229] p-1 rounded-sm border-b-[3px] border-transparent hover:border-black transition duration-500 hover:text-[white]">Current location </h1>
+        <h1 class="bg-[#75727229] p-1 rounded-sm ">
+          <label for="selectedcity" class="mr-1">Selected cities</label>
+          <select name="cities" class=" bg-[#75727229] rounded-sm font-normal outline-none" id="cities">
+            <option value="">Select</option>
+            <option value="volvo">Volvo</option>
+            <option value="saab">Saab</option>
+            <option value="opel">Opel</option>
+            <option value="audi">Audi</option>
+          </select>
+        </h1>
+
+        <h1 class="bg-[#75727229] p-1 rounded-sm  border-b-[3px] border-transparent hover:border-black transition duration-500 hover:text-[white]">Logout </h1>
+      </div>
       <section class="container">
         <div class="row">
           <form class="col w-full flex justify-center p-2" id="search-form">
@@ -99,13 +115,13 @@
 
       <!--5 day forecast-->
       <section class="">
-        <h1 class="font-bold text-[red] text-[22px]">Upcoming five days</h1>
+        <h1 class="font-bold text-[red] text-[22px]">Upcoming days</h1>
         <div
         class="row week-forecast flex flex-wrap justify-center gap-10 mt-6"
         >
           <div
             class="col shadow-xl w-[180px] grid place-items-center bg-[#8080803e] rounded-md"
-            v-for="(forecast, index) in dailyForecastsArray.slice(1)"
+            v-for="(forecast, index) in dailyForecastsArray"
             :key="index"
           >
             <h3>{{ forecast.day }}</h3>
@@ -120,6 +136,7 @@
           </div>
         </div>
       </section>
+      <h1 class="w-full border-2 text-center mt-2"><button class="py-1 px-2 bg-white rounded-md">Save the location</button></h1>
     </div>
   </div>
 </template>
@@ -167,6 +184,7 @@ export default {
   },
   methods: {
     serchplace() {
+       if(this.searchInput !==''){
         this.loading=true
         console.log(this.searchInput);
         this.city=this.searchInput
@@ -187,14 +205,10 @@ export default {
                     this.date = d.getDate() + '-' + this.monthNames[d.getMonth()] + '-' + d.getFullYear();
                     this.wind = this.weatherData.wind.speed;
                     this.humidity = this.weatherData.main.humidity;
-                    console.log(this.weatherData);
-                    console.log(this.time);
-                    console.log(this.date);
-                    console.log(this.iconUrl);
                 }
             })
             .catch(error => {
-                alert('input value is not correct,please enter the correct input')
+                alert('inputed location is not valid,please enter the valid locatin name')
                 this.loading=false
                 this.fetchdata()
                 console.error('Error fetching weather data:', error);
@@ -256,6 +270,7 @@ export default {
             .catch((error) => {
               console.error("Error fetching weather data:", error);
             });
+       }
     },
     fetchdata(){
       this.loading=true
@@ -266,6 +281,8 @@ export default {
         (position) => {
           var latitude = position.coords.latitude;
           var longitude = position.coords.longitude;
+          console.log(latitude);
+          console.log(longitude);
 
           const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
           const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
@@ -355,9 +372,11 @@ export default {
               console.error("Error fetching weather data:", error);
             });
         },
-        function (error) {
+         (error)=> {
           switch (error.code) {
             case error.PERMISSION_DENIED:
+              alert('User denied the request for Geolocation, please give permission')
+              this.router.push('/login')
               console.log("User denied the request for Geolocation.");
               break;
             case error.POSITION_UNAVAILABLE:
