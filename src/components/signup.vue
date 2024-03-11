@@ -85,18 +85,15 @@ export default {
           query: `
             mutation {
                 addUser(name: "${this.formData.name}", email: "${this.formData.email}", password: "${this.formData.password}") {
-                id
                 name
                 }
             }
             `,
         });
-        console.log(response.data);
         if (response.data.errors) {
           this.already = response.data.errors[0].message;
         } else {
           this.router.push('/home')
-          console.log("User added successfully:", response.data.data.addUser);
           this.resetForm();
         }
       } catch (error) {
@@ -105,13 +102,13 @@ export default {
     },
 
     submitForm(event) {
-      event.preventDefault(); // Prevent default form submission
+      event.preventDefault(); 
       if (
         this.formData.name != "" &&
         this.formData.email != "" &&
         this.formData.password != ""
       ) {
-        this.submitData(); // Call the submitData method here
+        this.submitData(); 
       } else {
         alert("Please fill in all the fields.");
       }

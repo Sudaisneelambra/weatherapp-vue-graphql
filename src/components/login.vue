@@ -48,13 +48,11 @@
             query: `
               mutation {
                   loginuser( email: "${this.formData.email}", password: "${this.formData.password}") {
-                  id
                   email
                   }
               }
               `,
           });
-          console.log(response);
           if (response.data.errors) {
             this.already = response.data.errors[0].message;
           } else if (response.data.data.loginuser.email){
