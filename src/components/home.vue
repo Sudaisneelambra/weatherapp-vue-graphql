@@ -37,12 +37,9 @@
         <h1 @click="fetchdata" class="bg-[#75727229] p-1 rounded-sm border-b-[3px] border-transparent hover:border-black transition duration-500 hover:text-[white]">Current location </h1>
         <h1 class="bg-[#75727229] p-1 rounded-sm ">
           <label for="selectedcity" class="mr-1">Selected cities</label>
-          <select name="cities" class=" bg-[#75727229] rounded-sm font-normal outline-none" id="cities">
+          <select name="cities" class=" bg-[#75727229] rounded-sm font-normal outline-none" id="cities" v-model="place"  @change="handleSelection">
             <option value="">Select</option>
-            <option value="volvo">Volvo</option>
-            <option value="saab">Saab</option>
-            <option value="opel">Opel</option>
-            <option value="audi">Audi</option>
+            <option v-for="(city, index) in selecetedplaces" :key="index" :value="city.placename" >{{ city.placename }}</option>
           </select>
         </h1>
 
@@ -136,7 +133,8 @@
           </div>
         </div>
       </section>
-      <h1 class="w-full border-2 text-center mt-2"><button class="py-1 px-2 bg-white rounded-md">Save the location</button></h1>
+      <h1 class="w-full text-center text-[red] text-[10px]">{{ msg }}</h1>
+      <h1 class="w-full  text-center mt-2"><button class="py-1 px-2 bg-white rounded-md font-bold" @click="addcity">Save the location</button></h1>
     </div>
   </div>
 </template>
@@ -149,7 +147,9 @@ export default {
   name: "WeatherHome",
   data() {
     return {
+      place:'',
       router :useRouter(),
+      msg:'',
       searchInput: '',
       loading:null,
       weatherData: null,
@@ -162,6 +162,7 @@ export default {
       time: null,
       wind: null,
       humidity: null,
+      selecetedplaces:[],
       dailyForecastsArray:[],
       monthNames: [
         "january",
@@ -181,12 +182,78 @@ export default {
   },
   mounted() {
     this.fetchdata()
+    
+
   },
   methods: {
+    async selectedplace() {
+        try {
+          const response = await axios.post('http://localhost:2000/graphql', {
+          query: `
+            {
+              getplaces {
+                id
+                placename
+              }
+            }
+          `,
+        });
+        console.log(response);
+          // this.selecetedplaces=response.data.data.getplaces
+          // console.log(this.selecetedplaces);
+        } catch (error) {
+          console.log('eroorss: ',error);
+        }
+      },
+    async addcity() {
+        try {
+          const response = await axios.post("http://localhost:2000/graphql", {
+            query: `
+                {
+                    getplaces {
+                        id
+                        placename
+                    }
+                }
+            `
+        });
+          this.selecetedplaces=response.data.data.getplaces
+          if(this.selecetedplaces.length>4){
+            this.msg='your selection limit is over'
+            setTimeout(() => {
+                  this.msg=''
+                }, 2000);
+          } else {
+            const response = await axios.post("http://localhost:2000/graphql", {
+                query: `
+                  mutation {
+                    addcity( placename: "${this.city}") {
+                      id
+                      placename
+                      }
+                  }
+                  `,
+              });
+              console.log(response);
+              if (response.data.errors) {
+                this.msg = response.data.errors[0].message;
+                setTimeout(() => {
+                  this.msg=''
+                }, 2000);
+              } 
+              else if (response.data.data.addcity.placename){
+                this.msg = 'city added successfully';
+              }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+        this.serchplace()
+      },
     serchplace() {
        if(this.searchInput !==''){
+        this.selectedplace()
         this.loading=true
-        console.log(this.searchInput);
         this.city=this.searchInput
         const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
         const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=${this.apiKey}`;
@@ -256,10 +323,6 @@ export default {
                   this.dailyForecastsArray.push(forecast);
                 }
 
-                console.log(
-                  "Daily forecasts as array after removing zero index: serrched",
-                  this.dailyForecastsArray
-                );
               } else {
                 console.error(
                   "Failed to fetch weather data. Status:",
@@ -271,57 +334,45 @@ export default {
               console.error("Error fetching weather data:", error);
             });
        }
+       
     },
-    fetchdata(){
-      this.loading=true
-      this.dailyForecastsArray=[]
-      this.searchInput=''
-        if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          var latitude = position.coords.latitude;
-          var longitude = position.coords.longitude;
-          console.log(latitude);
-          console.log(longitude);
+    handleSelection() {
 
-          const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
-          const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
+        this.loading=true
+        this.city=this.place
+        const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=${this.apiKey}`;
+        const futureDaysApi = `https://api.openweathermap.org/data/2.5/forecast?q=${this.city}&appid=${currentapikey}`;
 
-          const futuredaysapi = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
-
-          axios
-            .get(apiUrl)
-            .then((response) => {
-              if (response) {
-                const weatherData = response.data;
-                this.temparature = weatherData.main.temp / 10;
-                this.description = weatherData.weather[0].description;
-                this.iconUrl = `https://api.openweathermap.org/img/w/${weatherData.weather[0].icon}.png`;
-                console.log(this.iconUrl);
-                const d = new Date();
-                this.time =
-                  d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
-                this.date =
-                  d.getDate() +
-                  "-" +
-                  this.monthNames[d.getMonth()] +
-                  "-" +
-                  d.getFullYear();
-                this.wind = weatherData.wind.speed;
-                this.humidity = weatherData.main.humidity;
-                this.city = weatherData.name;
-              }
+        axios.get(apiUrl)
+            .then(response => {
+                if (response && response.data) {
+                    this.loading=false
+                    this.weatherData = response.data;
+                    this.temperature = this.weatherData.main.temp;
+                    this.description = this.weatherData.weather[0].description;
+                    this.iconUrl = `https://api.openweathermap.org/img/w/${this.weatherData.weather[0].icon}.png`;
+                    const d = new Date();
+                    this.time = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+                    this.date = d.getDate() + '-' + this.monthNames[d.getMonth()] + '-' + d.getFullYear();
+                    this.wind = this.weatherData.wind.speed;
+                    this.humidity = this.weatherData.main.humidity;
+                }
             })
-            .catch((error) => {
-              console.error(" fetching weather ", error);
-            });
+            .catch(error => {
+                alert('inputed location is not valid,please enter the valid locatin name')
+                this.loading=false
+                this.fetchdata()
+                console.error('Error fetching weather data:', error);
+            }); 
 
-          axios
-            .get(futuredaysapi)
+            axios
+            .get(futureDaysApi)
             .then((response) => {
               if (response.status === 200) {
                 this.loading=false
                 const futureweather = response.data;
+                this.dailyForecastsArray=[]
                 const dailyForecasts = {};
 
                 futureweather.list.forEach((item) => {
@@ -356,11 +407,101 @@ export default {
                     };
                   this.dailyForecastsArray.push(forecast);
                 }
-
-                console.log(
-                  "Daily forecasts as array after removing zero index:",
-                  this.dailyForecastsArray
+              } else {
+                console.error(
+                  "Failed to fetch weather data. Status:",
+                  response.status
                 );
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching weather data:", error);
+            });
+       
+    },
+    fetchdata(){
+      this.selectedplace()
+      this.loading=true
+      this.dailyForecastsArray=[]
+      this.searchInput=''
+        if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+
+          const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
+          const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
+
+          const futuredaysapi = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
+
+          axios
+            .get(apiUrl)
+            .then((response) => {
+              if (response) {
+                const weatherData = response.data;
+                this.temparature = weatherData.main.temp / 10;
+                this.description = weatherData.weather[0].description;
+                this.iconUrl = `https://api.openweathermap.org/img/w/${weatherData.weather[0].icon}.png`;
+                const d = new Date();
+                this.time =
+                  d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+                this.date =
+                  d.getDate() +
+                  "-" +
+                  this.monthNames[d.getMonth()] +
+                  "-" +
+                  d.getFullYear();
+                this.wind = weatherData.wind.speed;
+                this.humidity = weatherData.main.humidity;
+                this.city = weatherData.name;
+              }
+            })
+            .catch((error) => {
+              console.error(" fetching weather ", error);
+            });
+
+          axios
+            .get(futuredaysapi)
+            .then((response) => {
+              if (response.status === 200) {
+                this.loading=false
+                const futureweather = response.data;
+                this.dailyForecastsArray=[]
+                const dailyForecasts = {};
+
+                futureweather.list.forEach((item) => {
+                  const date = new Date(item.dt * 1000);
+                  const day = date.toDateString();
+
+                  if (!dailyForecasts[day]) {
+                    dailyForecasts[day] = {
+                      temperatures: [],
+                      descriptions: [],
+                      dates: [],
+                      icons: [],
+                    };
+                  }
+
+                  const temperature = item.main.temp;
+                  const description = item.weather[0].description;
+                  const icon = item.weather[0].icon;
+
+                  dailyForecasts[day].temperatures.push(temperature);
+                  dailyForecasts[day].descriptions.push(description);
+                  dailyForecasts[day].dates.push(date);
+                  dailyForecasts[day].icons.push(icon);
+                });
+                for (const day in dailyForecasts) {
+                  const forecast = {
+                        day: day,
+                        temperatures: dailyForecasts[day].temperatures,
+                        descriptions: dailyForecasts[day].descriptions,
+                        dates: dailyForecasts[day].dates,
+                        icons: dailyForecasts[day].icons,
+                    };
+                  this.dailyForecastsArray.push(forecast);
+                }
               } else {
                 console.error(
                   "Failed to fetch weather data. Status:",
