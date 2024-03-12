@@ -65,7 +65,7 @@ export default {
         });
         this.selecetedplaces = response.data.data.getplaces;
       } catch (error) {
-        console.log("eroorss: ", error);
+        console.log(`errors ${error}`);
       }
     },
     // city adding to 
@@ -152,7 +152,7 @@ export default {
             );
             this.loading = false;
             this.fetchdata();
-            console.error("Error fetching weather data:", error);
+            console.error(` fetching weather data error ${error}`);
           });
 
         axios
@@ -198,13 +198,13 @@ export default {
               }
             } else {
               console.error(
-                "Failed to fetch weather data. Status:",
-                response.status
+                `Failed to fetch weather data. Status 
+                ${response.status}`
               );
             }
           })
           .catch((error) => {
-            console.error("Error fetching weather data:", error);
+            console.error(`fetching weather data error ${error}`);
           });
       }
     },
@@ -242,11 +242,11 @@ export default {
           })
           .catch((error) => {
             alert(
-              "inputed location is not valid,please enter the valid locatin name"
+              "inputed location is not valid,please enter the valid location name"
             );
             this.loading = false;
             this.fetchdata();
-            console.error("Error fetching weather data:", error);
+            console.error(`fetching weather data error ${error}`);
           });
 
         axios
@@ -292,13 +292,13 @@ export default {
               }
             } else {
               console.error(
-                "Failed to fetch weather data. Status:",
-                response.status
+                `Failed to fetch weather data
+                ${response.status}`
               );
             }
           })
           .catch((error) => {
-            console.error("Error fetching weather data:", error);
+            console.error(`fetching weather data error ${error}`);
           });
       }
     },
@@ -343,7 +343,7 @@ export default {
                 }
               })
               .catch((error) => {
-                console.error(" fetching weather ", error);
+                console.error( `fetching weather ${error}`);
               });
 
             axios
@@ -389,38 +389,38 @@ export default {
                   }
                 } else {
                   console.error(
-                    "Failed to fetch weather data. Status:",
-                    response.status
+                    `failed to fetch weather
+                    ${response.status}`
                   );
                 }
               })
               .catch((error) => {
-                console.error("Error fetching weather data:", error);
+                console.error(`fetching data error ${error}`);
               });
           },
           (error) => {
             switch (error.code) {
               case error.PERMISSION_DENIED:
                 alert(
-                  "User denied the request for Geolocation, please give permission"
+                  "user cancelled the request  please give permission"
                 );
                 this.router.push("/login");
-                console.log("User denied the request for Geolocation.");
+                console.log("User canceled the request for Geolocation.");
                 break;
               case error.POSITION_UNAVAILABLE:
-                console.log("Location information is unavailable.");
+                console.log("location information is unavailable.");
                 break;
               case error.TIMEOUT:
-                console.log("The request to get user location timed out.");
+                console.log("get user location timed out.");
                 break;
               case error.UNKNOWN_ERROR:
-                console.log("An unknown error occurreded.");
+                console.log("unknown error.");
                 break;
             }
           }
         );
       } else {
-        console.log("Geolocation is not supported by this browser.");
+        console.log("geolocation is not supported by this browser.");
       }
     },
     async deleteplace() {
@@ -435,6 +435,9 @@ export default {
           });
           this.fetchdata()
           console.log(response);
+    },
+    logout() {
+      this.$router.push('/login');
     }
   },
 };
@@ -484,7 +487,7 @@ export default {
         </h1>
         <h1 class="links" @click="deleteplace">Reset selection</h1>
 
-        <h1 class="links">Logout</h1>
+        <h1 class="links" @click="logout">Logout</h1>
       </div>
       <section class="container">
         <div class="row">
