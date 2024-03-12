@@ -3,6 +3,9 @@
 import axios from "axios";
 // importing vue router
 import { useRouter } from "vue-router";
+import DailyWeatherCard from "../components/DailyWeatherCard.vue";
+import UpcomingDaysWeatherCard from '../components/UpcomingDaysWeatherCard'
+
 
 // data initialisation
 export default {
@@ -42,7 +45,10 @@ export default {
       ],
     };
   },
-
+  components: {
+    DailyWeatherCard,
+    UpcomingDaysWeatherCard
+  },
   // initial time
   mounted() {
     this.fetchdata();
@@ -322,6 +328,7 @@ export default {
               .then((response) => {
                 if (response) {
                   const weatherData = response.data;
+                  console.log(response.data);
                   this.temparature = weatherData.main.temp / 10;
                   this.description = weatherData.weather[0].description;
                   this.iconUrl = `https://api.openweathermap.org/img/w/${weatherData.weather[0].icon}.png`;
@@ -464,7 +471,7 @@ export default {
       >
         <h1 @click="fetchdata" class="links">Current location</h1>
         <h1 class="links">
-          <label for="selectedcity" class="mr-1">Selected cities</label>
+          <label for="selectedcity" class="mr-1">saved cities</label>
           <select
             name="cities"
             class="bg-[#75727229] rounded-sm font-normal outline-none"
@@ -482,10 +489,11 @@ export default {
             </option>
           </select>
         </h1>
-        <h1 class="links" @click="deleteplace">Reset selection</h1>
+        <h1 class="links" @click="deleteplace">Reset savedcity</h1>
 
         <h1 class="links" @click="logout">Logout</h1>
       </div>
+
       <section class="container">
         <div class="row">
           <form class="col w-full flex justify-center p-2" id="search-form">
@@ -520,64 +528,12 @@ export default {
       </section>
 
       <!-- todays temparature -->
-      <section class="current-weather">
-        <div class="container w-full">
-          <div class="flex flex-col sm:flex-row sm:gap-0 row sm:flex gap-4">
-            <div class="sm:w-[40%] grid place-items-center">
-              <h1
-                class="col temp-title text-[30px] text-center"
-                id="current-temperature "
-              >
-                {{ Number(temparature).toFixed(1) }}°
-              </h1>
-              <img :src="iconUrl" alt="icon" />
-            </div>
-            <div
-              class="col todays-info sm:w-[30%] flex flex-col justify-around items-center"
-            >
-              <p id="current-time ">{{ time }}</p>
-              <h2 id="current-day " class="font-bold text-[30px]">Today</h2>
-              <p id="weather-type">{{ description }}</p>
-            </div>
-            <div
-              class="col d-flex align-items-center side-info sm:w-[30%] grid place-items-center text-center p-3 sm:p-0"
-            >
-              <ul>
-                <li>Humidity: {{ humidity }}<span id="humidity"></span></li>
-                <li>Wind: {{ wind }} <span id="wind"></span></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+      <DailyWeatherCard :iconUrl="iconUrl" :temparature="temparature" :humidity="humidity" :wind="wind" :time="time"></DailyWeatherCard>
 
       <!--weather of upcoming days-->
-      <section class="">
-        <h1 class="font-bold text-[red] text-[22px]">Upcoming days</h1>
-        <div
-          class="row week-forecast flex flex-wrap justify-center gap-10 mt-6"
-        >
-          <div
-            class="col shadow-xl w-[180px] grid place-items-center bg-[#8080803e] rounded-md"
-            v-for="(forecast, index) in dailyForecastsArray"
-            :key="index"
-          >
-            <h3 class="font-[cursive] text-[12px] mt-2">{{ forecast.day }}</h3>
-            <br />
-            <img
-              :src="`https://api.openweathermap.org/img/w/${forecast.icons[0]}.png`"
-              alt="icon"
-            />
-            <br />
-            <p class="weather font-[cursive] text-[16px]">
-              {{ forecast?.descriptions[0] }}
-            </p>
-            <span class="mb-2"
-              >{{ (forecast.temperatures[0] / 10).toFixed(1) }}°</span
-            >
-          </div>
-        </div>
-      </section>
+      <UpcomingDaysWeatherCard :dailyForecastsArray="dailyForecastsArray"></UpcomingDaysWeatherCard>
+
+      
       <h1 class="w-full text-center text-[red] text-[10px] mt-2">{{ msg }}</h1>
       <h1 class="w-full text-center mt-2">
         <button
