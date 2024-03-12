@@ -16,7 +16,7 @@ export default {
       loading: null,
       weatherData: null,
       city: null,
-      apiKey: "374417dc2c58b9cf12e1995c20bfd8cd",
+      apiKey: `${process.env.VUE_APP_WEATHER_API}`,
       temparature: null,
       description: null,
       iconUrl: null,
@@ -120,10 +120,8 @@ export default {
         this.selectedplace();
         this.loading = true;
         this.city = this.searchInput;
-        const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
         const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=${this.apiKey}`;
-        const futureDaysApi = `https://api.openweathermap.org/data/2.5/forecast?q=${this.city}&appid=${currentapikey}`;
-
+        const futureDaysApi = `https://api.openweathermap.org/data/2.5/forecast?q=${this.city}&appid=${this.apiKey}`;
         axios
           .get(apiUrl)
           .then((response) => {
@@ -214,9 +212,8 @@ export default {
       if (this.place != "") {
         this.loading = true;
         this.city = this.place;
-        const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
         const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=${this.apiKey}`;
-        const futureDaysApi = `https://api.openweathermap.org/data/2.5/forecast?q=${this.city}&appid=${currentapikey}`;
+        const futureDaysApi = `https://api.openweathermap.org/data/2.5/forecast?q=${this.city}&appid=${this.apiKey}`;
 
         axios
           .get(apiUrl)
@@ -315,10 +312,10 @@ export default {
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
 
-            const currentapikey = "374417dc2c58b9cf12e1995c20bfd8cd";
-            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
+      
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${ this.apiKey}`;
 
-            const futuredaysapi = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${currentapikey}`;
+            const futuredaysapi = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${ this.apiKey}`;
 
             axios
               .get(apiUrl)
